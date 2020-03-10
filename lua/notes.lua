@@ -37,3 +37,32 @@ if not a then a = b end 等价于 a = a or b  -- lua中惯用写法.a为初始�
     nil, boolean, number(float, int ==> math.type()区分), string, userdata, function, 
     thread, table ==>用type区分 
 --]]
+
+-- 五、可变参数相关函数
+--[[ table.pack函数是获取一个索引从 1 开始的参数表 table，并会对这个 table 预定义一个字段 n，
+表示该表的长度。--]] 
+-- 与之相对的函数:table.unpack()。参数为数组，返回值为数组内的所有元素。
+-- 例子：
+function add(...)
+    local sum = 0 
+    local arg = table.pack(...)
+    for i = 1, arg.n do
+        sum = sum + arg[i]
+    end
+    return sum
+end
+-- select
+--[[
+    select(n, ...)  --数字n表示起点，select(n, ...)返回从起点n到结束的可变参数
+    select('#', ...)  --返回可变参数的数量
+--]]
+function add(...)
+    local sum = 0
+    for i = 1, select('#', ...) do
+        sum = sum + select(i, ...)
+    end
+    return sum
+end
+
+--  六、I/O
+-- io.read(0) 用于测试是否达到文件末尾。如果仍然有数据可读，返回空字符；否则，返回nil。
