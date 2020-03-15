@@ -178,4 +178,39 @@ end
 for k, v in pairs(debug.getinfo(permgen)) do
     print(string.format( "%s: %s", k, v))
 end
+
+--[[    八、自省机制    ]]
+function getvarvalue(name, level, isenv)
+    level = (level or 1) + 1    -- 因为在getvarvalue中调用，所以level + 1
+    -- 最先从局部变量中查找
+    for i = 1, math.huge do
+        local n, v = debug.getlocal(level, i)
+        if not n then break end
+        if n == name then return 'local', v end
+    end
+    -- 尝试查找upvalue
+    local func = debug.getinfo(level, 'f').func
+    for i = 1, math.huge do
+        local n, v = debug.getupvalue(func, i)
+        if not n then break end
+        if n == name then return 'upvalue', v end
+    end
     
+    if isenv then return 'noenv' end
+
+    -- 从环境中查找
+    local _, env = getvarvalue('_ENV', level, true)     -- level 之所以用这个是因为又嵌套了一层函数(getvarvalue)
+    if env then
+        return 'global', env[name]
+    else
+        return 'noenv'
+    end
+end
+-- _ENV = _G
+_ENV.aaa = 'test _ENV'
+local a = 42; print(getvarvalue('a'))
+print(string.format('_ENV.ttt = %s', _ENV.ttt))
+ttt = 'xxxxxx'; print(getvarvalue('ttt'))
+print(string.format('_ENV.ttt = %s', _ENV.ttt))
+print(string.format('_G.ttt = %s', _G.ttt))
+print(getvarvalue('aaa'))
